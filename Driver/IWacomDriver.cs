@@ -33,6 +33,12 @@ public interface IWacomDriver : IDisposable
     /// <paramref name="tablet"/>. Returns false when the request could not be delivered.
     /// </summary>
     bool Perform(WacomFunction function, int tablet);
+
+    /// <summary>
+    /// Stops the Wacom driver and starts it again, for when it has stopped responding to the pen.
+    /// Returns false when the restart could not be requested.
+    /// </summary>
+    bool Restart();
 }
 
 /// <summary>Stand-in on systems this plugin has no driver bridge for yet (Windows, Linux).</summary>
@@ -41,5 +47,6 @@ internal sealed class UnsupportedWacomDriver : IWacomDriver
     public bool IsAvailable => false;
     public IReadOnlyList<WacomTablet> ListTablets() => [];
     public bool Perform(WacomFunction function, int tablet) => false;
+    public bool Restart() => false;
     public void Dispose() { }
 }

@@ -86,6 +86,49 @@ internal sealed class MacWacomDriver(IPluginLogger logger) : IWacomDriver
         return true;
     }
 
+    /// <summary>The per-user launchd agent that runs TabletDriver (/Library/LaunchAgents/com.wacom.wacomtablet.plist).</summary>
+    public const string LaunchdLabel = "com.wacom.wacomtablet";
+
+    private static readonly TimeSpan RestartTimeout = TimeSpan.FromSeconds(15);
+
+    /// <summary>
+    /// <c>launchctl kickstart -k gui/&lt;uid&gt;/com.wacom.wacomtablet</c>: launchd stops TabletDriver
+    /// and starts it again, and TabletDriver relaunches WacomTabletDriver and WacomTouchDriver. All
+    /// three are back within about a second. Precision Mode is off in the new driver.
+    /// </summary>
+    public bool Restart()
+    {
+        var target = $"gui/{LibSystem.getuid()}/{LaunchdLabel}";
+        var start = new System.Diagnostics.ProcessStartInfo("/bin/launchctl", ["kickstart", "-k", target])
+        {
+            RedirectStandardError = true
+        };
+
+        using var process = System.Diagnostics.Process.Start(start);
+        if (process is null)
+        {
+            logger.Warn("Wacom RestartDriver: could not start launchctl");
+            return false;
+        }
+
+        var error = process.StandardError.ReadToEndAsync();
+        if (!process.WaitForExit(RestartTimeout))
+        {
+            logger.Warn($"Wacom RestartDriver: launchctl kickstart {target} did not finish within {RestartTimeout.TotalSeconds:0} s");
+            return false;
+        }
+
+        if (process.ExitCode != 0)
+        {
+            logger.Warn($"Wacom RestartDriver: launchctl kickstart {target} exited with {process.ExitCode}: {error.Result.Trim()}");
+            return false;
+        }
+
+        _precisionOn = false;
+        logger.Info($"Wacom RestartDriver: restarted {target}");
+        return true;
+    }
+
     public void Dispose() { }
 
     /// <summary>
@@ -181,6 +224,13 @@ internal sealed class MacWacomDriver(IPluginLogger logger) : IWacomDriver
             CoreFoundation.CFRelease(name);
         }
     }
+}
+
+/// <summary>The current user's id, for launchd's gui/&lt;uid&gt; domain.</summary>
+internal static partial class LibSystem
+{
+    [LibraryImport("/usr/lib/libSystem.dylib")]
+    public static partial uint getuid();
 }
 
 /// <summary>The few CoreFoundation calls the driver bridge needs.</summary>

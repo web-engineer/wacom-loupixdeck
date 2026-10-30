@@ -29,7 +29,7 @@ internal sealed class FunctionCommand(WacomPlugin plugin, WacomFunction function
         return Task.CompletedTask;
     }
 
-    private static void Hint(CommandContext ctx, string text)
+    internal static void Hint(CommandContext ctx, string text)
     {
         if (ctx.Target == ButtonTargets.TouchButton && ctx.SourceIndex is { } slot)
         {
@@ -49,7 +49,7 @@ internal sealed class FunctionCommand(WacomPlugin plugin, WacomFunction function
     private const string BackgroundHex = "#26323F";
     private const string WhiteHex = "#FFFFFF";
 
-    private static CommandDescriptor Make(string name, string displayName, string caption, string icon, string description) => new()
+    internal static CommandDescriptor Make(string name, string displayName, string caption, string icon, string description) => new()
     {
         CommandName = "Wacom." + name,
         DisplayName = displayName,

@@ -8,6 +8,10 @@ Remote) bound to them can trigger:
 | `Wacom.DisplayToggle` | Display Toggle: move the pen to the next display set up in Wacom Center |
 | `Wacom.PrecisionMode` | Precision Mode: press to turn it on, press again to turn it off |
 
+A third key, `Wacom.RestartDriver`, restarts the Wacom driver for when the pen or tablet stops
+responding. It runs `launchctl kickstart -k gui/<uid>/com.wacom.wacomtablet`; the pen drops out for
+a second or two.
+
 Everything else an ExpressKey does (keystrokes, modifiers, opening apps, scrolling) the host's own
 commands already cover, so this plugin leaves it alone.
 

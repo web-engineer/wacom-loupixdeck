@@ -7,7 +7,7 @@ namespace LoupixDeck.Plugin.Wacom;
 /// <summary>
 /// LoupixDeck plugin entry point. Gives Loupedeck keys the Wacom driver functions that otherwise
 /// only an ExpressKey (or ExpressKey Remote) bound to them can trigger: Display Toggle and
-/// Precision Mode. Keystrokes, modifiers, app launches and the like need no plugin; the host's own
+/// Precision Mode, plus a key that restarts the driver. Keystrokes, modifiers, app launches and the like need no plugin; the host's own
 /// macro commands already cover them.
 /// </summary>
 public sealed class WacomPlugin : LoupixPlugin, IPluginSettingsPage
@@ -23,10 +23,10 @@ public sealed class WacomPlugin : LoupixPlugin, IPluginSettingsPage
     {
         Id = "wacom",
         Name = "Wacom",
-        Version = new Version(0, 1, 0),
+        Version = new Version(0, 2, 0),
         SdkVersion = SdkInfo.Version,
         Author = "web-engineer",
-        Description = "Display Toggle and Precision Mode for Wacom tablets on Loupedeck keys (macOS only)."
+        Description = "Display Toggle, Precision Mode and Restart Driver for Wacom tablets on Loupedeck keys (macOS only)."
     };
 
     internal IWacomDriver Driver => _driver;
@@ -72,7 +72,8 @@ public sealed class WacomPlugin : LoupixPlugin, IPluginSettingsPage
     public override IEnumerable<IPluginCommand> GetCommands() =>
     [
         new FunctionCommand(this, WacomFunction.DisplayToggle),
-        new FunctionCommand(this, WacomFunction.PrecisionMode)
+        new FunctionCommand(this, WacomFunction.PrecisionMode),
+        new RestartDriverCommand(this)
     ];
 
     // ---- IPluginSettingsPage ----
@@ -126,7 +127,7 @@ public sealed class WacomPlugin : LoupixPlugin, IPluginSettingsPage
         new CommandGroupDescriptor
         {
             Group = GroupName,
-            Description = "Wacom driver functions: Display Toggle and Precision Mode",
+            Description = "Wacom driver functions: Display Toggle, Precision Mode and Restart Driver",
             Icon = "\U000F19B9" // mdi-draw-pen
         }
     ];
